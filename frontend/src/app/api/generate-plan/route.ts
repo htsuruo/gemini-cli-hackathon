@@ -1,4 +1,3 @@
-
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -18,9 +17,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Ingredient is required" }, { status: 400 });
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
 
-    const prompt = `
+    const prompt = ```
 あなたは子供の食の専門家であり、クリエイティブな料理研究家です。
 以下の情報に基づいて、苦手な食材を子供が喜んで食べるような「変身プラン」を3つ提案してください。
 
@@ -35,7 +34,6 @@ ${ingredient}
 以下のJSON形式で、必ず3つのプランを生成してください。
 説明文は子供に語りかけるような、やさしい言葉で記述してください。
 
-\
 ```json
 {
   "plans": [
@@ -56,7 +54,6 @@ ${ingredient}
     }
   ]
 }
-\
 ```
 `;
 
@@ -65,7 +62,7 @@ ${ingredient}
     const text = await response.text();
 
     // Extract JSON from the response
-    const jsonString = text.match(/\\\`\\[\\s\\S]*?\\\\]/)?.[1];
+    const jsonString = text.match(/```json\n([\s\S]*?)\n```/)?.[1];
     if (!jsonString) {
       throw new Error("Failed to extract JSON from the model's response.");
     }
