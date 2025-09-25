@@ -1,6 +1,16 @@
+"use client";
+
 import { Container, Title, Paper, TextInput, MultiSelect, Button, Stack, Space, NumberInput } from '@mantine/core';
+import { useRouter } from 'next/navigation';
 
 export default function ProfilePage() {
+  const router = useRouter();
+
+  const handleRegister = () => {
+    // TODO: Save profile data
+    router.push('/kitchen');
+  };
+
   return (
     <Container size="sm" my={40}>
       <Title order={1} ta="center">
@@ -23,7 +33,7 @@ export default function ProfilePage() {
             searchable
           />
           <Space h="md" />
-          <Button fullWidth>
+          <Button fullWidth onClick={handleRegister}>
             登録する
           </Button>
         </Stack>
