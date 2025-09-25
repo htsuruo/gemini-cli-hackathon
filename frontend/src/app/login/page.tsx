@@ -1,12 +1,23 @@
-
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
+import { Container, Title, Paper, TextInput, PasswordInput, Button, Stack } from '@mantine/core';
 
 export default function LoginPage() {
   return (
-    <Box>
-      <h1>ログイン</h1>
-      <Button variant="contained">Googleでログイン</Button>
-    </Box>
+    <Container size="xs" my={40}>
+      <Title ta="center">
+        ログイン
+      </Title>
+      <Paper withBorder shadow="md" p={30} mt={30} radius="md">
+        <Stack>
+          <TextInput label="メールアドレス" placeholder="your@email.com" required />
+          <PasswordInput label="パスワード" placeholder="Your password" required />
+          <Button fullWidth mt="xl">
+            ログイン
+          </Button>
+          <Button variant="default" fullWidth>
+            Googleでログイン
+          </Button>
+        </Stack>
+      </Paper>
+    </Container>
   );
 }

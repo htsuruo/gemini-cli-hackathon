@@ -1,31 +1,46 @@
-import AppBar from "@mui/material/AppBar";
-import Box from "@mui/material/Box";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import Link from "next/link";
+import { Container, Group, Button, Title, Box } from '@mantine/core';
+import Link from 'next/link';
 
 export default function Header() {
+  const headerStyle: React.CSSProperties = {
+    height: 60,
+    paddingLeft: 'var(--mantine-spacing-md)',
+    paddingRight: 'var(--mantine-spacing-md)',
+    borderBottom: '1px solid #e9ecef', // Hardcoded light gray
+  };
+
+  const innerStyle: React.CSSProperties = {
+    height: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  };
+
+  const titleStyle: React.CSSProperties = {
+    textDecoration: 'none',
+    color: 'inherit',
+  };
+
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            <Link href="/" passHref>
-              へんしんマジック・キッチン
-            </Link>
-          </Typography>
-          <Button color="inherit" component={Link} href="/kitchen">
+    <Box component="header" style={headerStyle}>
+      <Container fluid style={innerStyle}>
+        <Link href="/" style={titleStyle}>
+          <Title order={3}>
+            へんしんマジック・キッチン
+          </Title>
+        </Link>
+        <Group>
+          <Button variant="default" component={Link} href="/kitchen">
             キッチン
           </Button>
-          <Button color="inherit" component={Link} href="/profile">
+          <Button variant="default" component={Link} href="/profile">
             プロフィール
           </Button>
-          <Button color="inherit" component={Link} href="/login">
+          <Button component={Link} href="/login">
             ログイン
           </Button>
-        </Toolbar>
-      </AppBar>
+        </Group>
+      </Container>
     </Box>
   );
 }
