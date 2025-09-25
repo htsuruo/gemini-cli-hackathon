@@ -1,48 +1,64 @@
 "use client";
 
 import { useState } from 'react';
-import { Container, Title, Text, TextInput, Button, Loader, Grid, Card, Image, Stack, Space, Group } from '@mantine/core';
+import { Container, Title, Text, TextInput, Button, Loader, Grid, Card, Image, Stack, Space, Group, Alert } from '@mantine/core';
+import { IconAlertCircle } from '@tabler/icons-react';
 
-// AI提案のモックデータ
-const mockPlans = [
-  {
-    title: "【粉末変身】ピーマンハンバーグ",
-    catchphrase: "ピーマンを粉末にしてハンバーグに！栄養だけをこっそり届けよう",
-    image: "/next.svg", // 仮の画像
-    description: "ピーマンを乾燥させて粉末にし、ハンバーグのつなぎに混ぜます。見た目も味もほとんど分かりません。",
-  },
-  {
-    title: "【甘味変身】ピーマンチャップ",
-    catchphrase: "ケチャップ好きのためのピーマンチャップ！甘さで苦味を包み込もう",
-    image: "/vercel.svg", // 仮の画像
-    description: "お子様の好きなケチャップ味をベースに、甘めの味付けでピーマンの苦味を抑えます。",
-  },
-  {
-    title: "【食感変身】カリカリピーマンチップス",
-    catchphrase: "カリカリピーマンチップス！おやつ感覚で食べちゃおう",
-    image: "/globe.svg", // 仮の画像
-    description: "薄切りにして揚げることで、苦手な食感を『カリカリ』に変身させます。",
-  },
-];
-
+// AIが生成するプランの型定義
+interface Plan {
+  title: string;
+  catchphrase: string;
+  description: string;
+  image?: string; // 画像はオプショナルに
+}
 
 export default function KitchenPage() {
   const [ingredient, setIngredient] = useState('');
   const [loading, setLoading] = useState(false);
-  const [plans, setPlans] = useState<typeof mockPlans>([]);
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSearch = () => {
+  // 本来はプロフィールページから受け取るが、今回はハードコード
+  const likes = ['ハンバーグ', 'カリカリ', 'あまい', 'ケチャップ味'];
+  const dislikes = ['きのこ', 'ぐにゃぐにゃ', 'にがい'];
+
+  const handleSearch = async () => {
     if (!ingredient) return;
     setLoading(true);
     setPlans([]);
-    // AIのモックとしてsetTimeoutを使用
-    setTimeout(() => {
-      // 入力された食材が「ピーマン」の場合のみモックデータを表示
-      if (ingredient.trim() === 'ピーマン') {
-        setPlans(mockPlans);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/generate-plan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ingredient, likes, dislikes }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'プランの生成に失敗しました。');
       }
+
+      const data = await response.json();
+      // 各プランに静的なプレースホルダー画像を追加
+      const plansWithImages = data.plans.map((plan: Plan, index: number) => ({
+        ...plan,
+        image: [`/next.svg`, `/vercel.svg`, `/globe.svg`][index % 3],
+      }));
+      setPlans(plansWithImages);
+
+    } catch (e) {
+        if (e instanceof Error) {
+            setError(e.message);
+        } else {
+            setError('予期せぬエラーが発生しました。');
+        }
+    } finally {
       setLoading(false);
-    }, 2000);
+    }
   };
 
   return (
@@ -80,6 +96,12 @@ export default function KitchenPage() {
         </Stack>
       )}
 
+      {error && (
+        <Alert icon={<IconAlertCircle size="1rem" />} title="エラー" color="red" radius="md">
+          {error}
+        </Alert>
+      )}
+
       {plans.length > 0 && (
          <Stack>
             <Title order={2} ta="center">
@@ -91,7 +113,7 @@ export default function KitchenPage() {
                   <Card shadow="sm" padding="lg" radius="md" withBorder>
                     <Card.Section>
                       <Image
-                        src={plan.image}
+                        src={plan.image || '/file.svg'} // フォールバック画像
                         height={160}
                         alt={plan.title}
                       />
@@ -114,11 +136,6 @@ export default function KitchenPage() {
               ))}
             </Grid>
         </Stack>
-      )}
-       {plans.length === 0 && !loading && ingredient.trim() === 'ピーマン' && (
-        <Text ta="center" c="dimmed">
-            検索ボタンを押してね
-        </Text>
       )}
     </Container>
   );
