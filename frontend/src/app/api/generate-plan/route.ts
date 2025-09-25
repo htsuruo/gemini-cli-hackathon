@@ -17,7 +17,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Ingredient is required" }, { status: 400 });
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.5-pro",
+      generationConfig: {
+        responseMimeType: "application/json",
+      },
+    });
 
     const prompt = `
 あなたは子供の食の専門家であり、クリエイティブな料理研究家です。
@@ -34,7 +39,6 @@ ${ingredient}
 以下のJSON形式で、必ず3つのプランを生成してください。
 説明文は子供に語りかけるような、やさしい言葉で記述してください。
 
-```json
 {
   "plans": [
     {
@@ -54,20 +58,12 @@ ${ingredient}
     }
   ]
 }
-```
 `;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    const text = await response.text();
-
-    // Extract JSON from the response
-    const jsonString = text.match(/```json\n([\s\S]*?)\n```/)?.[1];
-    if (!jsonString) {
-      throw new Error("Failed to extract JSON from the model's response.");
-    }
-
-    const data = JSON.parse(jsonString);
+    const text = response.text();
+    const data = JSON.parse(text);
 
     return NextResponse.json(data);
 
