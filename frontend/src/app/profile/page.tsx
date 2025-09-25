@@ -1,32 +1,30 @@
-import { Container, Title, Text, Paper, TextInput, MultiSelect, Button, Stack, Space } from '@mantine/core';
+import { Container, Title, Paper, TextInput, MultiSelect, Button, Stack, Space, NumberInput } from '@mantine/core';
 
 export default function ProfilePage() {
   return (
     <Container size="sm" my={40}>
       <Title order={1} ta="center">
-        お子様のプロフィール
+        こんにちは！まずはお子様のことを教えてください
       </Title>
-      <Text size="lg" color="dimmed" ta="center">
-        好き嫌いやアレルギーを登録しましょう。
-      </Text>
       <Paper withBorder shadow="md" p={30} mt={30} radius="md">
         <Stack>
-          <TextInput label="ニックネーム" placeholder="お子様のニックネーム" required />
+          <TextInput label="名前" placeholder="お子様の名前" required />
+          <NumberInput label="年齢" placeholder="お子様の年齢" required min={0} max={18} />
           <MultiSelect
-            label="アレルギー"
-            placeholder="アレルギーのある食材を選択"
-            data={['卵', '乳製品', '小麦', 'えび', 'かに', 'そば', '落花生']}
+            label="好きな食べ物・食感"
+            placeholder="好きなものを教えてください"
+            data={['ハンバーグ', 'カリカリ', 'あまい', 'ケチャップ味', 'からあげ', 'ポテト', 'くだもの']}
             searchable
           />
           <MultiSelect
-            label="苦手な食べ物"
-            placeholder="苦手な食べ物を入力"
-            data={['ピーマン', 'ナス', 'トマト', 'きのこ', 'にんじん']}
+            label="苦手な食べ物・食感"
+            placeholder="苦手なものを教えてください"
+            data={['ピーマン', 'きのこ', 'ぐにゃぐにゃ', 'にがい', 'なす', 'トマト', 'ブロッコリー']}
             searchable
           />
           <Space h="md" />
           <Button fullWidth>
-            プロフィールを保存
+            登録する
           </Button>
         </Stack>
       </Paper>
