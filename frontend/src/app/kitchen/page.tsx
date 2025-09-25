@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Container, Title, Text, TextInput, Button, Loader, Grid, Card, Image, Stack, Space, Group, Alert } from '@mantine/core';
+import { Container, Title, Text, TextInput, Button, Loader, Grid, Card, Image, Stack, Space, Group, Alert, Skeleton } from '@mantine/core';
 import { IconAlertCircle } from '@tabler/icons-react';
 
 // AIが生成するプランの型定義
@@ -9,12 +9,13 @@ interface Plan {
   title: string;
   catchphrase: string;
   description: string;
-  image?: string; // 画像はオプショナルに
+  image?: string;
+  imageLoading?: boolean;
 }
 
 export default function KitchenPage() {
   const [ingredient, setIngredient] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [textLoading, setTextLoading] = useState(false);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,31 +25,62 @@ export default function KitchenPage() {
 
   const handleSearch = async () => {
     if (!ingredient) return;
-    setLoading(true);
+    setTextLoading(true);
     setPlans([]);
     setError(null);
 
     try {
-      const response = await fetch('/api/generate-plan', {
+      // 1. テキストプランを生成
+      const textResponse = await fetch('/api/generate-plan', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ingredient, likes, dislikes }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'プランの生成に失敗しました。');
+      if (!textResponse.ok) {
+        const errorData = await textResponse.json();
+        throw new Error(errorData.details || 'プランの生成に失敗しました。');
       }
 
-      const data = await response.json();
-      // 各プランに静的なプレースホルダー画像を追加
-      const plansWithImages = data.plans.map((plan: Plan, index: number) => ({
+      const textData = await textResponse.json();
+      const initialPlans = textData.plans.map((plan: Omit<Plan, 'imageLoading' | 'image'>) => ({
         ...plan,
-        image: [`/next.svg`, `/vercel.svg`, `/globe.svg`][index % 3],
+        image: undefined,
+        imageLoading: true,
       }));
-      setPlans(plansWithImages);
+      setPlans(initialPlans);
+      setTextLoading(false);
+
+      // 2. 各プランの画像を並列で生成
+      initialPlans.forEach(async (plan: Plan, index: number) => {
+        try {
+          const imageResponse = await fetch('/api/generate-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title: plan.title, description: plan.description }),
+          });
+
+          if (!imageResponse.ok) {
+            // 画像生成に失敗してもエラーメッセージは出さず、画像なしで続行
+            console.error(`Failed to generate image for: ${plan.title}`);
+            return;
+          }
+
+          const imageData = await imageResponse.json();
+          
+          // 対応するプランの画像とローディング状態を更新
+          setPlans(currentPlans => currentPlans.map((p, i) => 
+            i === index ? { ...p, image: imageData.imageUrl, imageLoading: false } : p
+          ));
+
+        } catch (e) {
+          console.error(`Error fetching image for ${plan.title}:`, e);
+          // エラー時もローディングを止める
+          setPlans(currentPlans => currentPlans.map((p, i) => 
+            i === index ? { ...p, imageLoading: false } : p
+          ));
+        }
+      });
 
     } catch (e) {
         if (e instanceof Error) {
@@ -56,10 +88,11 @@ export default function KitchenPage() {
         } else {
             setError('予期せぬエラーが発生しました。');
         }
-    } finally {
-      setLoading(false);
+        setTextLoading(false);
     }
   };
+
+  const isLoading = textLoading || plans.some(p => p.imageLoading);
 
   return (
     <Container my={40}>
@@ -82,14 +115,14 @@ export default function KitchenPage() {
             }
           }}
         />
-        <Button onClick={handleSearch} disabled={loading}>
-          マジカル調理法を検索
+        <Button onClick={handleSearch} disabled={isLoading}>
+          {textLoading ? 'プランを考え中...' : (plans.some(p => p.imageLoading) ? 'お皿を準備中...' : 'マジカル調理法を検索')}
         </Button>
       </Group>
 
       <Space h="xl" />
 
-      {loading && (
+      {textLoading && (
         <Stack align="center">
           <Loader />
           <Text>マジカル調理法を検索中...</Text>
@@ -102,7 +135,7 @@ export default function KitchenPage() {
         </Alert>
       )}
 
-      {plans.length > 0 && (
+      {plans.length > 0 && !textLoading && (
          <Stack>
             <Title order={2} ta="center">
               「{ingredient}」の変身プランはこちら！
@@ -112,11 +145,13 @@ export default function KitchenPage() {
                 <Grid.Col span={{ base: 12, md: 4 }} key={index}>
                   <Card shadow="sm" padding="lg" radius="md" withBorder>
                     <Card.Section>
-                      <Image
-                        src={plan.image || '/file.svg'} // フォールバック画像
-                        height={160}
-                        alt={plan.title}
-                      />
+                      <Skeleton visible={plan.imageLoading} height={160}>
+                        <Image
+                          src={plan.image || '/file.svg'} // フォールバック画像
+                          height={160}
+                          alt={plan.title}
+                        />
+                      </Skeleton>
                     </Card.Section>
 
                     <Stack mt="md" mb="xs">
