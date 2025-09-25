@@ -76,4 +76,5 @@ Example of splitting commits:
 - If suggesting multiple commits, it will help you stage and commit the changes separately
 - Always reviews the commit diff to ensure the message matches the changes
 - The commit message type (e.g., "feat") must not be followed by a scope in parentheses. For example, use "feat: your message" NOT "feat(scope): your message".
+- Do not automatically push after committing.
 """
