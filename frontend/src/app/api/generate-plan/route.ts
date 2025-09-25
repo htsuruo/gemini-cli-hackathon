@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
 
-    const prompt = ```
+    const prompt = `
 あなたは子供の食の専門家であり、クリエイティブな料理研究家です。
 以下の情報に基づいて、苦手な食材を子供が喜んで食べるような「変身プラン」を3つ提案してください。
 
