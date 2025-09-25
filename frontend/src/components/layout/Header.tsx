@@ -1,4 +1,3 @@
-
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
@@ -16,15 +15,15 @@ export default function Header() {
               へんしんマジック・キッチン
             </Link>
           </Typography>
-          <Link href="/kitchen" passHref>
-            <Button color="inherit">キッチン</Button>
-          </Link>
-          <Link href="/profile" passHref>
-            <Button color="inherit">プロフィール</Button>
-          </Link>
-          <Link href="/login" passHref>
-            <Button color="inherit">ログイン</Button>
-          </Link>
+          <Button color="inherit" component={Link} href="/kitchen">
+            キッチン
+          </Button>
+          <Button color="inherit" component={Link} href="/profile">
+            プロフィール
+          </Button>
+          <Button color="inherit" component={Link} href="/login">
+            ログイン
+          </Button>
         </Toolbar>
       </AppBar>
     </Box>
