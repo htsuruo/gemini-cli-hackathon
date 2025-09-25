@@ -2,9 +2,11 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest, NextResponse } from "next/server";
 
-// IMPORTANT: APIキーは本来環境変数で管理するべきです。
-// This is not a real key, but a placeholder.
-const API_KEY = "YOUR_API_KEY_HERE"; 
+const API_KEY = process.env.GOOGLE_API_KEY;
+
+if (!API_KEY) {
+  throw new Error("Google API key is not configured.");
+}
 
 const genAI = new GoogleGenerativeAI(API_KEY);
 
