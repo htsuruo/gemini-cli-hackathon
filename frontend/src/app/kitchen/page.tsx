@@ -174,8 +174,8 @@ export default function KitchenPage() {
 						「{ingredient}」の変身プランはこちら！
 					</Title>
 					<Grid mt="md">
-						{plans.map((plan, index) => (
-							<Grid.Col span={{ base: 12, md: 4 }} key={index}>
+						{plans.map((plan) => (
+							<Grid.Col span={{ base: 12, md: 4 }} key={plan.title}>
 								<Card shadow="sm" padding="lg" radius="md" withBorder>
 									<Card.Section>
 										<Skeleton visible={plan.imageLoading} height={160}>
@@ -201,7 +201,7 @@ export default function KitchenPage() {
 									</Button>
 								</Card>
 							</Grid.Col>
-						))}
+						))}{" "}
 					</Grid>
 				</Stack>
 			)}
