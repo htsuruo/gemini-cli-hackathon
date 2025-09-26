@@ -1,30 +1,33 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 const API_KEY = process.env.GOOGLE_API_KEY;
 
 if (!API_KEY) {
-  throw new Error("Google API key is not configured.");
+	throw new Error("Google API key is not configured.");
 }
 
 const genAI = new GoogleGenerativeAI(API_KEY);
 
 export async function POST(req: NextRequest) {
-  try {
-    const { ingredient, likes, dislikes } = await req.json();
+	try {
+		const { ingredient, likes, dislikes } = await req.json();
 
-    if (!ingredient) {
-      return NextResponse.json({ error: "Ingredient is required" }, { status: 400 });
-    }
+		if (!ingredient) {
+			return NextResponse.json(
+				{ error: "Ingredient is required" },
+				{ status: 400 },
+			);
+		}
 
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-pro",
-      generationConfig: {
-        responseMimeType: "application/json",
-      },
-    });
+		const model = genAI.getGenerativeModel({
+			model: "gemini-2.5-pro",
+			generationConfig: {
+				responseMimeType: "application/json",
+			},
+		});
 
-    const prompt = `
+		const prompt = `
 あなたは子供の食の専門家であり、クリエイティブな料理研究家です。
 以下の情報に基づいて、苦手な食材を子供が喜んで食べるような「変身プラン」を3つ提案してください。
 
@@ -60,17 +63,20 @@ ${ingredient}
 }
 `;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-    const data = JSON.parse(text);
+		const result = await model.generateContent(prompt);
+		const response = await result.response;
+		const text = response.text();
+		const data = JSON.parse(text);
 
-    return NextResponse.json(data);
-
-  } catch (error) {
-    console.error(error);
-    // エラーがErrorインスタンスであるか確認
-    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
-    return NextResponse.json({ error: "Failed to generate plan.", details: errorMessage }, { status: 500 });
-  }
+		return NextResponse.json(data);
+	} catch (error) {
+		console.error(error);
+		// エラーがErrorインスタンスであるか確認
+		const errorMessage =
+			error instanceof Error ? error.message : "An unknown error occurred";
+		return NextResponse.json(
+			{ error: "Failed to generate plan.", details: errorMessage },
+			{ status: 500 },
+		);
+	}
 }
